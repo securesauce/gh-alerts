@@ -1,0 +1,48 @@
+#!/bin/bash
+set -e
+
+PACKAGE=${1}
+QUERY='
+  query($owner: String!, $repo: String!, $endCursor: String) {
+    repository(name: $repo, owner: $owner) {
+      vulnerabilityAlerts(first: 100, after: $endCursor) {
+        nodes {
+          createdAt
+          dismissReason
+          dismissedAt
+          dismisser { login, name }
+          securityAdvisory { summary, permalink }
+          securityVulnerability {
+            package { name }
+            severity
+          }
+          vulnerableManifestPath
+          vulnerableRequirements
+        },
+        pageInfo {
+          hasNextPage
+          endCursor
+        }
+      }
+    }
+  }
+'
+
+TEMPLATE="
+  {{- tablerow \"PACKAGE\" \"SEVERITY\" \"MANIFEST\" -}}
+  {{- range .data.repository.vulnerabilityAlerts.nodes -}}
+    {{- if or (not \"${PACKAGE}\") (eq .securityVulnerability.package.name \"${PACKAGE}\") -}}
+      {{- if eq .securityVulnerability.severity \"CRITICAL\" -}}
+        {{- tablerow .securityVulnerability.package.name (autocolor \"red\" \"critical severity\") .vulnerableManifestPath -}}
+      {{- else if eq .securityVulnerability.severity \"HIGH\" -}}
+        {{- tablerow .securityVulnerability.package.name (autocolor \"magenta\" \"high severity\") .vulnerableManifestPath -}}
+      {{- else if eq .securityVulnerability.severity \"MODERATE\" -}}
+        {{- tablerow .securityVulnerability.package.name (autocolor \"yellow\" \"moderate severity\") .vulnerableManifestPath -}}
+      {{- else if eq .securityVulnerability.severity \"LOW\" -}}
+        {{- tablerow .securityVulnerability.package.name (autocolor \"cyan\" \"low severity\") .vulnerableManifestPath -}}
+      {{- end}}
+    {{- end}}
+  {{- end -}}
+"
+
+exec gh api graphql --paginate -F owner=":owner" -F repo=":repo" -f query="${QUERY}" --template="${TEMPLATE}"
