@@ -1,4 +1,4 @@
-# `gh alerts` GitHub CLI extension
+# gh alerts
 
 [GitHub CLI](https://github.com/cli/cli) extension for viewing security alerts. 
 
