@@ -4,7 +4,7 @@ set -e
 PACKAGE=${1}
 QUERY='
   query($owner: String!, $repo: String!, $endCursor: String) {
-    repository(name: $repo, owner: $owner) {
+    repository(owner: $owner, name: $repo) {
       vulnerabilityAlerts(first: 100, after: $endCursor) {
         nodes {
           createdAt
@@ -45,4 +45,38 @@ TEMPLATE="
   {{- end -}}
 "
 
-exec gh api graphql --paginate -F owner=":owner" -F repo=":repo" -f query="${QUERY}" --template="${TEMPLATE}"
+help() {
+    cat <<-EOF
+ list your security alerts
+
+USAGE
+  $ gh alerts [-h | --help] [<package>]
+
+OPTIONS
+  -h, --help    show the help
+
+EXAMPLES
+  $ gh alerts pyyaml
+  PACKAGE  SEVERITY       MANIFEST
+  pyyaml   high severity  requirements.txt
+  pyyaml   high severity  requirements.txt
+EOF
+}
+
+# main
+OWNER=":owner"
+REPO=":repo"
+
+while [ $# -ge 0 ]; do
+    case "$1" in
+    -h | --help)
+        help
+        exit 0
+        ;;
+    *)
+        exec gh api graphql --paginate -F owner="${OWNER}" -F repo="${REPO}" -f query="${QUERY}" --template="${TEMPLATE}"
+        exit 0
+        ;;
+    esac
+    shift
+done
