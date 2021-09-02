@@ -9,6 +9,13 @@ gh extension install ericwb/gh-alerts
 
 ## Usage
 ```bash
-gh alerts
-gh alerts <package>
+gh alerts [-h | --help] [<package>]
+```
+
+## Examples
+```bash
+gh alerts pyyaml
+PACKAGE  SEVERITY       MANIFEST
+pyyaml   high severity  requirements.txt
+pyyaml   high severity  requirements.txt
 ```
