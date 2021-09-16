@@ -1,7 +1,40 @@
 #!/bin/bash
 set -e
 
-PACKAGE=${1}
+help() {
+    cat <<-EOF
+ list your security alerts
+
+USAGE
+  $ gh alerts [-h | --help] [<package>]
+
+OPTIONS
+  -o, --org     show alerts at org level
+  -h, --help    show the help
+
+EXAMPLES
+  $ gh alerts pyyaml
+  PACKAGE  SEVERITY       MANIFEST
+  pyyaml   high severity  requirements.txt
+  pyyaml   high severity  requirements.txt
+EOF
+}
+
+while [ "$1" != "" ]
+do
+  case $1 in
+    -o | --org ) shift
+      OWNER="$1"
+      ;;
+    -h | --help ) help
+      exit 0
+      ;;
+    * ) PACKAGE="$1"
+      ;;
+  esac
+  shift
+done
+
 QUERY='
   query($owner: String!, $repo: String!, $endCursor: String) {
     repository(owner: $owner, name: $repo) {
@@ -29,7 +62,6 @@ QUERY='
 '
 
 TEMPLATE="
-  {{- tablerow \"PACKAGE\" \"SEVERITY\" \"MANIFEST\" -}}
   {{- range .data.repository.vulnerabilityAlerts.nodes -}}
     {{- if or (not \"${PACKAGE}\") (eq .securityVulnerability.package.name \"${PACKAGE}\") -}}
       {{- if eq .securityVulnerability.severity \"CRITICAL\" -}}
@@ -45,38 +77,56 @@ TEMPLATE="
   {{- end -}}
 "
 
-help() {
-    cat <<-EOF
- list your security alerts
+ORG_QUERY='
+  query($owner: String!, $endCursor: String) {
+    organization (login: $owner) {
+      repositories(first: 100, after: $endCursor) {
+        nodes {
+          vulnerabilityAlerts(first: 100, after: $endCursor) {
+            nodes {
+              createdAt
+              dismissReason
+              dismissedAt
+              dismisser { login, name }
+              repository { nameWithOwner } 
+              securityAdvisory { summary, permalink }
+              securityVulnerability {
+                package { name }
+                severity
+              }
+              vulnerableManifestPath
+              vulnerableRequirements
+            }
+          }
+        },
+        pageInfo {
+          hasNextPage
+          endCursor
+        }
+      }
+    }
+  }
+'
 
-USAGE
-  $ gh alerts [-h | --help] [<package>]
+ORG_TEMPLATE='
+  {{- range $repo := .data.organization.repositories.nodes -}}
+    {{- range .vulnerabilityAlerts.nodes -}}
+      {{- if eq .securityVulnerability.severity "CRITICAL" -}}
+        {{- tablerow .repository.nameWithOwner .securityVulnerability.package.name (autocolor "red" "critical severity") .vulnerableManifestPath -}}
+      {{- else if eq .securityVulnerability.severity "HIGH" -}}
+        {{- tablerow .repository.nameWithOwner .securityVulnerability.package.name (autocolor "magenta" "high severity") .vulnerableManifestPath -}}
+      {{- else if eq .securityVulnerability.severity "MODERATE" -}}
+        {{- tablerow .repository.nameWithOwner .securityVulnerability.package.name (autocolor "yellow" "moderate severity") .vulnerableManifestPath -}}
+      {{- else if eq .securityVulnerability.severity "LOW" -}}
+        {{- tablerow .repository.nameWithOwner .securityVulnerability.package.name (autocolor "cyan" "low severity") .vulnerableManifestPath -}}
+      {{- end -}}
+    {{- end -}}
+  {{- end -}}
+'
 
-OPTIONS
-  -h, --help    show the help
-
-EXAMPLES
-  $ gh alerts pyyaml
-  PACKAGE  SEVERITY       MANIFEST
-  pyyaml   high severity  requirements.txt
-  pyyaml   high severity  requirements.txt
-EOF
-}
-
-# main
-OWNER=":owner"
-REPO=":repo"
-
-while [ $# -ge 0 ]; do
-    case "$1" in
-    -h | --help)
-        help
-        exit 0
-        ;;
-    *)
-        exec gh api graphql --paginate -F owner="${OWNER}" -F repo="${REPO}" -f query="${QUERY}" --template="${TEMPLATE}"
-        exit 0
-        ;;
-    esac
-    shift
-done
+if [ -n "$OWNER" ]
+then
+  exec gh api graphql --paginate -F owner="${OWNER}" -f query="${ORG_QUERY}" --template="${ORG_TEMPLATE}"
+else
+  exec gh api graphql --paginate -F owner=":owner" -F repo=":repo" -f query="${QUERY}" --template="${TEMPLATE}"
+fi
