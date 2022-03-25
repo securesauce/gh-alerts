@@ -9,7 +9,7 @@ gh extension install ericwb/gh-alerts
 
 ## Usage
 ```bash
-gh alerts [-h | --help] [<package>]
+gh alerts [-h] [-o ORG_NAME] [<package>]
 ```
 
 ## Examples
