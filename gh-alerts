@@ -6,11 +6,11 @@ help() {
  list your security alerts
 
 USAGE
-  $ gh alerts [-h | --help] [<package>]
+  $ gh alerts [-h] [-o ORG_NAME] [<package>]
 
 OPTIONS
-  -o, --org     show alerts at org level
-  -h, --help    show the help
+  -o ORG_NAME, --org ORG_NAME   show alerts for org
+  -h, --help                    show this help message and exit
 
 EXAMPLES
   $ gh alerts pyyaml
