@@ -3,7 +3,7 @@ set -e
 
 help() {
     cat <<-EOF
- list your security alerts
+list your open security alerts
 
 USAGE
   $ gh alerts [-h] [-o ORG_NAME] [<package>]
@@ -35,10 +35,11 @@ do
   shift
 done
 
+# shellcheck disable=SC2016  # all $ in the following are not referring to bash variables
 QUERY='
   query($owner: String!, $repo: String!, $endCursor: String) {
     repository(owner: $owner, name: $repo) {
-      vulnerabilityAlerts(first: 100, after: $endCursor) {
+      vulnerabilityAlerts(first: 100, after: $endCursor, states: [ OPEN ]) {
         nodes {
           createdAt
           dismissReason
@@ -72,23 +73,24 @@ TEMPLATE="
         {{- tablerow .securityVulnerability.package.name (autocolor \"yellow\" \"moderate severity\") .vulnerableManifestPath -}}
       {{- else if eq .securityVulnerability.severity \"LOW\" -}}
         {{- tablerow .securityVulnerability.package.name (autocolor \"cyan\" \"low severity\") .vulnerableManifestPath -}}
-      {{- end}}
-    {{- end}}
+      {{- end -}}
+    {{- end -}}
   {{- end -}}
 "
 
+# shellcheck disable=SC2016  # all $ in the following are not referring to bash variables
 ORG_QUERY='
   query($owner: String!, $endCursor: String) {
     organization (login: $owner) {
       repositories(first: 100, after: $endCursor) {
         nodes {
-          vulnerabilityAlerts(first: 100, after: $endCursor) {
+          vulnerabilityAlerts(first: 100, after: $endCursor, states: [ OPEN ]) {
             nodes {
               createdAt
               dismissReason
               dismissedAt
               dismisser { login, name }
-              repository { nameWithOwner } 
+              repository { nameWithOwner }
               securityAdvisory { summary, permalink }
               securityVulnerability {
                 package { name }
@@ -108,6 +110,7 @@ ORG_QUERY='
   }
 '
 
+# shellcheck disable=SC2016  # all $ in the following are not referring to bash variables
 ORG_TEMPLATE='
   {{- range $repo := .data.organization.repositories.nodes -}}
     {{- range .vulnerabilityAlerts.nodes -}}
