@@ -4,7 +4,7 @@
 
 ## Installation
 ```bash
-gh extension install ericwb/gh-alerts
+gh extension install securesauce/gh-alerts
 ```
 
 ## Usage
