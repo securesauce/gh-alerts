@@ -9,7 +9,7 @@ gh extension install securesauce/gh-alerts
 
 ## Usage
 ```bash
-gh alerts [-h] [-o ORG_NAME] [<package>]
+gh alerts [-h] [-o ORG_NAME] [PACKAGE_NAME]
 ```
 
 ## Examples
