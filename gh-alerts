@@ -6,7 +6,7 @@ help() {
 list your open security alerts
 
 USAGE
-  $ gh alerts [-h] [-o ORG_NAME] [<package>]
+  $ gh alerts [-h] [-o ORG_NAME] [PACKAGE_NAME]
 
 OPTIONS
   -o ORG_NAME, --org ORG_NAME   show alerts for org
@@ -110,22 +110,23 @@ ORG_QUERY='
   }
 '
 
-# shellcheck disable=SC2016  # all $ in the following are not referring to bash variables
-ORG_TEMPLATE='
-  {{- range $repo := .data.organization.repositories.nodes -}}
+ORG_TEMPLATE="
+  {{- range \$repo := .data.organization.repositories.nodes -}}
     {{- range .vulnerabilityAlerts.nodes -}}
-      {{- if eq .securityVulnerability.severity "CRITICAL" -}}
-        {{- tablerow .repository.nameWithOwner .securityVulnerability.package.name (autocolor "red" "critical severity") .vulnerableManifestPath -}}
-      {{- else if eq .securityVulnerability.severity "HIGH" -}}
-        {{- tablerow .repository.nameWithOwner .securityVulnerability.package.name (autocolor "magenta" "high severity") .vulnerableManifestPath -}}
-      {{- else if eq .securityVulnerability.severity "MODERATE" -}}
-        {{- tablerow .repository.nameWithOwner .securityVulnerability.package.name (autocolor "yellow" "moderate severity") .vulnerableManifestPath -}}
-      {{- else if eq .securityVulnerability.severity "LOW" -}}
-        {{- tablerow .repository.nameWithOwner .securityVulnerability.package.name (autocolor "cyan" "low severity") .vulnerableManifestPath -}}
+      {{- if or (not \"${PACKAGE}\") (eq .securityVulnerability.package.name \"${PACKAGE}\") -}}
+        {{- if eq .securityVulnerability.severity \"CRITICAL\" -}}
+          {{- tablerow .repository.nameWithOwner .securityVulnerability.package.name (autocolor \"red\" \"critical severity\") .vulnerableManifestPath -}}
+        {{- else if eq .securityVulnerability.severity \"HIGH\" -}}
+          {{- tablerow .repository.nameWithOwner .securityVulnerability.package.name (autocolor \"magenta\" \"high severity\") .vulnerableManifestPath -}}
+        {{- else if eq .securityVulnerability.severity \"MODERATE\" -}}
+          {{- tablerow .repository.nameWithOwner .securityVulnerability.package.name (autocolor \"yellow\" \"moderate severity\") .vulnerableManifestPath -}}
+        {{- else if eq .securityVulnerability.severity \"LOW\" -}}
+          {{- tablerow .repository.nameWithOwner .securityVulnerability.package.name (autocolor \"cyan\" \"low severity\") .vulnerableManifestPath -}}
+        {{- end -}}
       {{- end -}}
     {{- end -}}
   {{- end -}}
-'
+"
 
 if [ -n "$OWNER" ]
 then
