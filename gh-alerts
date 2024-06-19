@@ -66,13 +66,13 @@ TEMPLATE="
   {{- range .data.repository.vulnerabilityAlerts.nodes -}}
     {{- if or (not \"${PACKAGE}\") (eq .securityVulnerability.package.name \"${PACKAGE}\") -}}
       {{- if eq .securityVulnerability.severity \"CRITICAL\" -}}
-        {{- tablerow .securityVulnerability.package.name (autocolor \"red\" \"critical severity\") .vulnerableManifestPath -}}
+        {{- tablerow .securityVulnerability.package.name (autocolor \"red\" \"critical severity\") .vulnerableManifestPath .securityAdvisory.permalink -}}
       {{- else if eq .securityVulnerability.severity \"HIGH\" -}}
-        {{- tablerow .securityVulnerability.package.name (autocolor \"magenta\" \"high severity\") .vulnerableManifestPath -}}
+        {{- tablerow .securityVulnerability.package.name (autocolor \"magenta\" \"high severity\") .vulnerableManifestPath .securityAdvisory.permalink -}}
       {{- else if eq .securityVulnerability.severity \"MODERATE\" -}}
-        {{- tablerow .securityVulnerability.package.name (autocolor \"yellow\" \"moderate severity\") .vulnerableManifestPath -}}
+        {{- tablerow .securityVulnerability.package.name (autocolor \"yellow\" \"moderate severity\") .vulnerableManifestPath .securityAdvisory.permalink -}}
       {{- else if eq .securityVulnerability.severity \"LOW\" -}}
-        {{- tablerow .securityVulnerability.package.name (autocolor \"cyan\" \"low severity\") .vulnerableManifestPath -}}
+        {{- tablerow .securityVulnerability.package.name (autocolor \"cyan\" \"low severity\") .vulnerableManifestPath .securityAdvisory.permalink -}}
       {{- end -}}
     {{- end -}}
   {{- end -}}
@@ -115,13 +115,13 @@ ORG_TEMPLATE="
     {{- range .vulnerabilityAlerts.nodes -}}
       {{- if or (not \"${PACKAGE}\") (eq .securityVulnerability.package.name \"${PACKAGE}\") -}}
         {{- if eq .securityVulnerability.severity \"CRITICAL\" -}}
-          {{- tablerow .repository.nameWithOwner .securityVulnerability.package.name (autocolor \"red\" \"critical severity\") .vulnerableManifestPath -}}
+          {{- tablerow .repository.nameWithOwner .securityVulnerability.package.name (autocolor \"red\" \"critical severity\") .securityAdvisory.permalink -}}
         {{- else if eq .securityVulnerability.severity \"HIGH\" -}}
-          {{- tablerow .repository.nameWithOwner .securityVulnerability.package.name (autocolor \"magenta\" \"high severity\") .vulnerableManifestPath -}}
+          {{- tablerow .repository.nameWithOwner .securityVulnerability.package.name (autocolor \"magenta\" \"high severity\") .securityAdvisory.permalink -}}
         {{- else if eq .securityVulnerability.severity \"MODERATE\" -}}
-          {{- tablerow .repository.nameWithOwner .securityVulnerability.package.name (autocolor \"yellow\" \"moderate severity\") .vulnerableManifestPath -}}
+          {{- tablerow .repository.nameWithOwner .securityVulnerability.package.name (autocolor \"yellow\" \"moderate severity\") .securityAdvisory.permalink -}}
         {{- else if eq .securityVulnerability.severity \"LOW\" -}}
-          {{- tablerow .repository.nameWithOwner .securityVulnerability.package.name (autocolor \"cyan\" \"low severity\") .vulnerableManifestPath -}}
+          {{- tablerow .repository.nameWithOwner .securityVulnerability.package.name (autocolor \"cyan\" \"low severity\") .securityAdvisory.permalink -}}
         {{- end -}}
       {{- end -}}
     {{- end -}}

@@ -14,8 +14,9 @@ gh alerts [-h] [-o ORG_NAME] [PACKAGE_NAME]
 
 ## Examples
 ```bash
-gh alerts pyyaml
-PACKAGE  SEVERITY       MANIFEST
-pyyaml   high severity  requirements.txt
-pyyaml   high severity  requirements.txt
+gh alerts
+
+# glob-parent  high severity    package-lock.json    https://github.com/advisories/GHSA-ww39-953v-wcq6
+# braces       high severity    package-lock.json    https://github.com/advisories/GHSA-grv7-fg5c-xmjg
+# ws           high severity    package-lock.json    https://github.com/advisories/GHSA-3h5v-q93c-6h6q
 ```
